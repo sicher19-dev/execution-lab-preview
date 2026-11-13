@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Execution Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0d; --panel:#131316; --panel2:#191920; --raise:#202027;
+  --ink:#efece4; --mute:#8e8e96; --dim:#5c5c63;
+  --gold:#f5b700; --gold-dim:#b58400; --gold-soft:rgba(245,183,0,.12);
+  --line:#232328; --line-soft:#1b1b1f;
+  --green:#4caf6d; --blue:#6aa5d6; --red:#d65c5c;
+  --FF:#e85d75; --SI:#f08c2e; --FS:#3fb8a8; --CH:#4ccc6a; --ST:#c9a227; --SL:#e5e05a; --CU:#5bc8f5;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:'Archivo',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+button{font-family:inherit;color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:calc(14px + var(--sat)) 14px calc(50px + var(--sab))}
+header.top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.mark{width:40px;height:40px;border-radius:10px;background:var(--gold);color:#0b0b0d;font-weight:900;font-size:17px;letter-spacing:-1px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.kicker{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);font-weight:700}
+h1{font-size:22px;margin:2px 0 0;font-weight:900;letter-spacing:-.3px;line-height:1.1}
+.sub{color:var(--mute);font-size:13px;margin-top:3px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mute);margin:0 0 10px;font-weight:700;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card h2 small{letter-spacing:0;text-transform:none;font-weight:500;font-size:12px;color:var(--dim);text-align:right}
+.card .q{margin-left:8px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--mute);font:700 12px/20px 'Archivo',sans-serif;cursor:pointer;padding:0;min-height:0;vertical-align:1px;letter-spacing:0;text-transform:none;flex:0 0 auto;align-self:center}
+.card .q.on{background:var(--gold);color:#0b0b0d;border-color:var(--gold)}
+.tabs{position:sticky;top:0;z-index:5;display:flex;gap:6px;padding:calc(6px + var(--sat)) 0 10px;margin:-6px 0 2px;background:linear-gradient(var(--bg) 85%,transparent)}
+.tab{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 8px;font-size:13px;font-weight:700;cursor:pointer;min-height:40px;color:var(--mute);letter-spacing:.2px}
+.tab.on{background:var(--gold);color:#0b0b0d;border-color:var(--gold)}
+.tab small{display:block;font-weight:500;font-size:11px;letter-spacing:0;opacity:.75;margin-top:1px}
+@media (max-width:430px){.tab small{display:none}.tab{padding:10px 4px;font-size:12px}}
+.help{font-size:13px;line-height:1.5;color:var(--ink);background:var(--gold-soft);border:1px solid var(--gold-dim);border-radius:10px;padding:10px 12px;margin:0 0 12px}
+.help b{color:var(--gold)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.gtitle{font-weight:800;font-size:19px}
+.gmeta{color:var(--mute);font-size:12px;margin-top:2px}
+.nav{display:flex;gap:6px}
+.btn{background:transparent;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:36px}
+.btn:active{background:var(--raise)}
+.btn[disabled]{opacity:.35;cursor:default}
+.btn.on{background:var(--gold);color:#0b0b0d;border-color:var(--gold)}
+.ctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.ctl .lab{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);font-weight:700;width:100%}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:620px){.tiles{grid-template-columns:repeat(5,1fr)}}
+.tile{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.tile .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:700}
+.tile .v{font-weight:900;font-size:28px;line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .n{font-size:12px;color:var(--mute);margin-top:3px}
+.d{font-family:'JetBrains Mono',monospace;font-size:12px}
+.d.up{color:var(--green)}.d.dn{color:var(--red)}.d.flat{color:var(--dim)}
+.bar{display:flex;height:14px;gap:2px;margin:10px 0 8px;border-radius:4px;overflow:hidden}
+.bar div{min-width:2px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.note{font-size:12px;color:var(--dim);margin-top:8px;line-height:1.45}
+svg{display:block;width:100%;height:auto;touch-action:manipulation}
+svg text{font-family:'Archivo',system-ui,sans-serif;fill:var(--dim);font-size:11px}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);text-align:right;padding:6px 6px;border-bottom:1px solid var(--line);font-weight:700;position:sticky;top:0;background:var(--panel)}
+td{padding:8px 6px;border-bottom:1px solid var(--line-soft);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th.l,td.l{text-align:left}
+tbody tr{cursor:pointer}
+tr.sel td{background:var(--gold-soft)}
+.scroll{max-height:420px;overflow:auto;-webkit-overflow-scrolling:touch;margin:0 -14px;padding:0 14px}
+.chip{display:inline-block;min-width:42px;text-align:center;padding:2px 6px;border-radius:6px;font-weight:700;font-family:'JetBrains Mono',monospace;font-size:12px}
+.g{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;border:1px solid var(--line);color:var(--mute)}
+.sel-cap{font-weight:700;font-size:14px}
+.video{position:relative;margin-top:10px;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:16/9}
+.video video{width:100%;height:100%;display:block;background:#000}
+.video .slot{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--mute);font-size:13px;padding:16px;background:repeating-linear-gradient(135deg,transparent 0 12px,rgba(245,183,0,.05) 12px 24px)}
+.video .edit{position:absolute;top:10px;right:10px}
+.video .ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.video.cal .ov{pointer-events:auto;cursor:crosshair}
+.video .calmsg{position:absolute;left:10px;top:10px;right:120px;background:rgba(11,11,13,.85);border:1px solid var(--gold);color:var(--ink);padding:8px 10px;border-radius:8px;font-size:13px;pointer-events:none}
+.video.cal video,.video.edit video{pointer-events:none}
+.video.edit .ov{pointer-events:auto;cursor:crosshair}
+.video.zoom video,.video.zoom .ov{transform:scale(2.4);transform-origin:var(--zx,50%) var(--zy,55%)}
+tr.grp td{color:var(--gold);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;padding-top:12px;border-bottom:0}
+tr.thin td{opacity:.45}
+small.real{color:var(--gold);font-weight:700;font-size:11px}
+small.noise{color:var(--dim);font-size:11px}
+.tagbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.tagbar .prog{font-size:12px;color:var(--mute);margin-right:auto}
+.editbar{margin-top:8px;border:1px solid var(--gold-dim);background:var(--gold-soft);border-radius:10px;padding:10px 12px;font-size:13px}
+.vbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px;font-size:12px;color:var(--mute)}
+.vbar a,.vbar button{color:var(--ink);background:none;border:0;padding:0;font-size:12px;text-decoration:underline;cursor:pointer}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px;margin-top:10px}
+.kv span:nth-child(odd){color:var(--mute)}
+.two{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:700px){.two{grid-template-columns:1fr 1fr}}
+.foot{margin-top:28px;color:var(--dim);font-size:11px;text-align:center}
+@media(max-width:600px){#log th:nth-child(7),#log td:nth-child(7),#ptTable th:nth-child(5),#ptTable td:nth-child(5),#ptTable th:nth-child(6),#ptTable td:nth-child(6){display:none}td,th{padding:7px 4px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="mark">NB</div>
+  <div>
+    <div class="kicker">No Brand Baseball Analytics</div>
+    <h1>Execution Lab</h1>
+    <div class="sub" id="who"></div>
+  </div>
+</header>
+
+<div class="card" data-help="start">
+  <div class="row">
+    <div><div class="gtitle" id="gTitle">Loading…</div><div class="gmeta" id="gMeta"></div></div>
+    <div class="nav"><button class="btn" id="prev">‹ Prev</button><button class="btn" id="next">Next ›</button><button class="btn" id="season">Whole season</button></div>
+  </div>
+  <div class="ctl"><span class="lab">Season</span><span id="seasonBtns"></span></div>
+  <div class="ctl"><span class="lab">Count</span><span id="countBtns"></span></div>
+  <div class="ctl"><span class="lab">Pitch</span><span id="ptBtns"></span></div>
+  <div class="ctl"><span class="lab">Graded against</span><span id="layerBtns"></span></div>
+  <div class="note" id="layerNote"></div>
+</div>
+
+<div class="tabs" id="tabs" role="tablist">
+  <button class="tab" data-tab="read" role="tab">Read<small>scores and the grade mix</small></button>
+  <button class="tab" data-tab="pitches" role="tab">Pitches<small>chart, log and video</small></button>
+  <button class="tab" data-tab="starts" role="tab">Starts<small>start by start, game log</small></button>
+  <button class="tab" data-tab="situations" role="tab">Situations<small>outs, score, times through</small></button>
+</div>
+
+<div class="pane" data-pane="read">
+<div class="card" data-help="read">
+  <h2>Read<small id="readSub"></small></h2>
+  <div class="tiles" id="tiles"></div>
+  <div class="bar" id="gbar"></div><div class="legend" id="gleg"></div>
+</div>
+
+<div class="card" id="summaryCard" data-help="seasons" hidden>
+  <h2>Seasons side by side<small id="summarySub"></small></h2>
+  <div style="overflow:auto"><table id="summary"></table></div>
+  <div class="note" id="summaryNote"></div>
+</div>
+
+<div class="card" data-help="bypitch">
+  <h2>By pitch<small>this view vs season</small></h2>
+  <div style="overflow:auto"><table id="ptTable"></table></div>
+</div>
+</div>
+
+<div class="pane" data-pane="pitches">
+<div class="card" data-help="location">
+  <h2>Location<small>tap a pitch for video</small></h2>
+  <div class="seg"><button class="btn on" id="vMiss">Miss pattern</button><button class="btn" id="vPlate">Target to plate</button></div>
+  <svg id="chart" viewBox="0 0 360 380"></svg>
+  <div class="legend" id="chartLeg"></div>
+</div>
+
+<div class="card" id="selCard" data-help="clip">
+  <h2>Selected pitch<small id="selHint">tap any dot or row</small></h2>
+  <div class="sel-cap" id="selCap">No pitch selected</div>
+  <div class="video" id="video">
+    <video id="player" playsinline controls preload="metadata" hidden></video>
+    <div class="slot" id="slot">Tap a pitch on the chart or in the log to load its clip</div>
+    <svg class="ov" id="overlay" viewBox="0 0 1000 562" preserveAspectRatio="none" hidden></svg>
+    <div class="calmsg" id="calMsg" hidden></div>
+    <button class="btn edit" id="editTarget" hidden title="Coach tool: set or correct where the catcher set up">Edit target</button>
+  </div>
+  <div class="vbar"><span id="clipInfo"></span><span id="angles"></span><span><button id="tagBtn" hidden title="Coach tool: set the glove for every pitch in view, one tap each">Tag gloves</button> <button id="calBtn" hidden>Calibrate camera</button> <button id="closeClip" hidden>Close</button></span></div>
+  <div class="editbar" id="editBar" hidden>
+    <div class="tagbar" id="tagBar" hidden><span class="prog" id="tagProg"></span><button class="btn on" id="tagOk">Looks right (Enter)</button><button class="btn" id="tagSkip">Skip (S)</button><button class="btn" id="tagStop">Stop (Esc)</button></div>
+    <div id="editMsg"></div>
+    <div class="ctl" style="margin-top:6px"><button class="btn" id="editOnPanel">Tap on the zone</button><button class="btn" id="editOnPic">Tap on the picture</button><span style="flex:1"></span><button class="btn" id="editClear">Clear glove</button><button class="btn" id="editCancel">Cancel</button><button class="btn on" id="editSave">Save</button></div>
+    <div class="note"><button id="editCopy" style="background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;cursor:pointer;font-size:12px">Copy all glove reads</button> <span id="editCopied"></span> <span id="editStore"></span></div>
+  </div>
+  <div class="note" id="ovNote" hidden></div>
+  <div class="kv" id="kv"></div>
+</div>
+
+<div class="card" data-help="log">
+  <h2>Pitch log<small>tap a row for video</small></h2>
+  <div class="scroll"><table id="log"></table></div>
+</div>
+</div>
+
+<div class="pane" data-pane="starts">
+<div class="card" data-help="trend">
+  <h2>Start by start<small>shaded = noise band · tap a start to open it</small></h2>
+  <div class="ctl" style="margin-top:0"><span class="lab">Show</span><span id="metricBtns"></span></div>
+  <div class="ctl"><span class="lab">Series</span><span id="seriesBtns"></span></div>
+  <div style="overflow:auto;margin-top:8px"><svg id="trend" viewBox="0 0 720 250" style="min-width:560px"></svg></div>
+  <div class="legend" id="trendLeg"></div>
+</div>
+
+<div class="card" data-help="games">
+  <h2>Game log<small>tap a game to open it</small></h2>
+  <div class="scroll"><table id="glog"></table></div>
+</div>
+</div>
+
+<div class="pane" data-pane="situations">
+<div class="card" data-help="situations">
+  <h2>By situation<small id="sitSub">this view, split six ways</small></h2>
+  <div style="overflow:auto"><table id="sitTable"></table></div>
+  <div class="note" id="sitNote"></div>
+</div>
+</div>
+
+<div class="foot" id="foot"></div>
+</div>
+
+<!-- preview build: no team store. Glove reads and camera taps stay in this browser. -->
+<script type="module">
+import { LAYERS, GRADES, GRADE_LABEL, score, stats, gradeCounts, dirWord, median } from './engine.js';
+
+// ---------- data ----------
+const qs = new URLSearchParams(location.search);
+const PID = (qs.get('p') || 'skenes').replace(/[^a-z0-9_-]/gi, '');
+const D = await (await fetch(`data/${PID}.json`, { cache: 'no-store' })).json();
+let CLIPS = {};
+try { const r = await fetch(`data/${PID}-clips.json`, { cache: 'no-store' }); if (r.ok) CLIPS = await r.json(); } catch (e) { /* no clips yet */ }
+
+// ---------- team store (the app's backend) ----------
+// Same origin as the app, so the app's sign-in is already in this browser.
+// Coaches write glove reads and camera calibrations here; a pitcher reads his
+// own. With no backend configured (local preview) everything stays in the
+// browser and the coach tools are shown.
+const cfg = window.NBB_CONFIG || {};
+let sbc = null, SESSION = null, ROLE = null;
+const BE = { reads: {}, cams: {}, status: 'off' };
+if (cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase && window.supabase.createClient) {
+  try {
+    sbc = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true } });
+    SESSION = (await sbc.auth.getSession()).data.session;
+    if (SESSION) {
+      const pr = await sbc.from('profiles').select('role').eq('user_id', SESSION.user.id).maybeSingle();
+      ROLE = pr.data ? pr.data.role : null;
+      const g = await sbc.from('execution_glove_reads').select('play_id,x,z').eq('pitcher_id', PID);
+      if (!g.error) for (const r of g.data) BE.reads[r.play_id] = [r.x, r.z];
+      const c = await sbc.from('execution_cameras').select('park,angle,u0,ax,v0,az,taps,zone,note');
+      if (!c.error) for (const r of c.data) BE.cams[r.park + '|' + r.angle] = r;
+      BE.status = (g.error || c.error) ? 'tables missing' : 'on';
+    } else BE.status = 'signed out';
+  } catch (e) { BE.status = 'error'; }
+}
+const COACH = ROLE === 'coach' || !sbc;
+async function persistGlove(pid, xz) {
+  if (!sbc || ROLE !== 'coach') return 'browser';
+  const r = xz
+    ? await sbc.from('execution_glove_reads').upsert({ pitcher_id: PID, play_id: pid, x: xz[0], z: xz[1], updated_by: SESSION.user.id, updated_at: new Date().toISOString() })
+    : await sbc.from('execution_glove_reads').delete().eq('pitcher_id', PID).eq('play_id', pid);
+  if (r.error) throw new Error(r.error.message);
+  return 'team';
+}
+async function persistCamera(key, c) {
+  if (!sbc || ROLE !== 'coach') return 'browser';
+  const [park, angle] = key.split('|');
+  const r = await sbc.from('execution_cameras').upsert({ park, angle, u0: c.u0, ax: c.ax, v0: c.v0, az: c.az, taps: c.taps, zone: c.zone, note: c.note || null, updated_by: SESSION.user.id, updated_at: new Date().toISOString() });
+  if (r.error) throw new Error(r.error.message);
+  return 'team';
+}
+const storeWord = w => w === 'team' ? 'saved to the team store' : 'saved in this browser only';
+
+const L = { glove: 10, inferred: 9, plan: D.baseline.plan };   // glove/inferred placeholders until glove reads load
+const RHP = (D.pitcher.hand || 'RHP') === 'RHP';
+const col = f => getComputedStyle(document.documentElement).getPropertyValue('--' + f).trim() || '#999';
+const GC = { executed: 'var(--green)', near: '#8fd6b0', centered: 'var(--red)', 'off strike': 'var(--gold)', 'off ball': 'var(--dim)' };
+
+// Glove reads: pitch id -> [x, z] feet, where the catcher set up. Seeded from
+// data/<id>-glove.json, then whatever a coach saved in this browser.
+let GLOVE = {};
+try { const r = await fetch(`data/${PID}-glove.json`, { cache: 'no-store' }); if (r.ok) GLOVE = await r.json(); } catch (e) { /* none seeded */ }
+try { Object.assign(GLOVE, JSON.parse(localStorage.getItem('nb_glove_' + PID) || '{}')); } catch (e) { /* storage off */ }
+Object.assign(GLOVE, BE.reads);   // the team store wins over the browser copy
+
+// Seasons: the data file carries every season's games; the page shows one
+// at a time (st.season) and the summary card puts them side by side.
+const EVERY = D.games;
+EVERY.forEach(g => { g.season = g.season || g.date.slice(0, 4); g.pitches.forEach(p => { p.twoK = p.s >= 2; p.grade = p.g; p.mplan = p.m; p.s_ = p.s; }); });   // p.s_ = the count's strikes; engine.stats reads p.s[layer] for scores
+const SEASONS = [...new Set(EVERY.map(g => g.season))].sort();
+const ALL_P = EVERY.flatMap(g => g.pitches);
+let ALL = [], FAMS = [];
+function setSeason(s) {
+  D.games = EVERY.filter(g => g.season === s);
+  D.games.forEach((g, gi) => g.pitches.forEach(p => { p.gi = gi; }));
+  ALL = D.games.flatMap(g => g.pitches);
+  FAMS = Object.keys(D.fam_name).filter(f => ALL.some(p => p.fam === f));
+}
+// Aim habit per pitch type: where this pitcher's pitches really go relative
+// to the glove, from his own glove reads. Needs a handful of reads to mean
+// anything. The inferred target = glove + habit.
+const HABIT_MIN = 5;
+function habits() {
+  const by = {};
+  for (const p of ALL_P) { const g = GLOVE[p.pid]; if (!g) continue; (by[p.fam] = by[p.fam] || []).push([p.x - g[0], p.z - g[1]]); }
+  const out = {};
+  for (const [f, v] of Object.entries(by)) if (v.length >= HABIT_MIN) out[f] = [mean(v.map(d => d[0])), mean(v.map(d => d[1]))];
+  return out;
+}
+// Score every pitch on every layer; run again whenever glove reads change.
+function scoreAll() {
+  const H = habits();
+  for (const p of ALL_P) {
+    p.glove = GLOVE[p.pid] || null;
+    p.inferred = p.glove && H[p.fam] ? [p.glove[0] + H[p.fam][0], p.glove[1] + H[p.fam][1]] : null;
+    p.m = { glove: p.glove ? [(p.x - p.glove[0]) * 12, (p.z - p.glove[1]) * 12] : null, inferred: p.inferred ? [(p.x - p.inferred[0]) * 12, (p.z - p.inferred[1]) * 12] : null, plan: p.mplan };
+    p.d = {}; p.sc = {};
+    for (const l of LAYERS) { const v = p.m[l]; p.d[l] = v ? Math.hypot(v[0], v[1]) : null; p.sc[l] = v ? score(p.d[l], L[l]) : null; }
+    // Plan policy: dead-middle scores a fixed value (0 for this pitcher), whatever its distance. Glove layers stay pure distance.
+    if (p.grade === 'centered' && D.policy && D.policy.centered_score != null) p.sc.plan = D.policy.centered_score;
+    p.s = p.sc;
+  }
+  return H;
+}
+let HABITS = scoreAll();
+const hasLayer = l => ALL_P.some(p => p.m[l]);
+const gloveCount = () => ALL.filter(p => p.glove).length;
+
+// ---------- state ----------
+const st = { season: D.season || SEASONS[SEASONS.length - 1], g: 0, layer: 'plan', count: 'all', pt: 'all', view: 'miss', sel: null, metric: 'score', series: [] };
+let tag = { on: false, list: [], i: 0, saved: 0 };   // the Tag gloves flow (coach tool), further down
+// Tabs: Read, Pitches, Starts. The URL's ?t= wins, then the last tab used on this device.
+const TABS = ['read', 'pitches', 'starts', 'situations'];
+let tabPick = null; try { tabPick = new URLSearchParams(location.search).get('t') || localStorage.getItem('nb_exec_tab'); } catch (e) {}
+st.tab = TABS.includes(tabPick) ? tabPick : 'read';
+function setTab(t, scroll) {
+  st.tab = t; try { localStorage.setItem('nb_exec_tab', t); } catch (e) {}
+  for (const b of document.querySelectorAll('#tabs .tab')) b.classList.toggle('on', b.dataset.tab === t);
+  for (const p of document.querySelectorAll('.pane')) p.hidden = p.dataset.pane !== t;
+  if (scroll) $('tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+for (const b of document.querySelectorAll('#tabs .tab')) b.onclick = () => setTab(b.dataset.tab);
+setSeason(st.season); st.g = D.games.length - 1;
+const METRICS = {
+  score: { label: 'Command', get: S => S.score, band: S => S.band, fmt: v => f1(v), lo: 0, hi: 100 },
+  exec: { label: 'Executed %', get: S => S.exec == null ? null : S.exec * 100, band: () => 0, fmt: v => Math.round(v) + '%', lo: 0, hi: 100 },
+  cent: { label: 'Dead-middle %', get: S => S.cent == null ? null : S.cent * 100, band: () => 0, fmt: v => Math.round(v) + '%', lo: 0, hi: 30 },
+  miss: { label: 'Typical miss', get: S => S.med, band: () => 0, fmt: v => f1(v) + '"', lo: 0, hi: 8 },
+};
+const LAYER_NAME = { glove: 'Glove', inferred: 'Glove + habit', plan: 'The plan' };
+const LAYER_NOTE = {
+  glove: 'Glove: distance from where the catcher set up. Charges every pitch that was never meant to go to the glove.',
+  inferred: 'Glove + habit: the glove, moved by where this pitcher really aims that pitch. Closer to intent.',
+  plan: 'The plan: the pitcher’s own target box for that pitch in that count. Every pitch is graded, and dead-middle never counts: it scores 0.',
+};
+const $ = id => document.getElementById(id);
+const f1 = x => x == null || isNaN(x) ? '–' : x.toFixed(1);
+const pct = x => x == null || isNaN(x) ? '–' : Math.round(x * 100) + '%';
+const fmtDate = s => { const [y, m, d] = s.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m - 1] + ' ' + (+d); };
+const gLabel = g => fmtDate(g.date) + (g.home ? ' vs ' : ' at ') + g.opp;
+const filt = P => { if (st.count !== 'all') P = P.filter(p => st.count === '2K' ? p.twoK : !p.twoK); if (st.pt !== 'all') P = P.filter(p => p.fam === st.pt); return P; };
+const cur = () => filt(st.g < 0 ? ALL : D.games[st.g].pitches);
+const seasonSet = () => filt(ALL);
+function delta(v, ref, dec = 1, suffix = '', vs = 'season') {
+  if (v == null || ref == null || isNaN(v) || isNaN(ref)) return '';
+  const d = v - ref, cls = d > 0.05 ? 'up' : d < -0.05 ? 'dn' : 'flat';
+  return `<span class="d ${cls}">${d > 0 ? '+' : ''}${d.toFixed(dec)}${suffix} vs ${vs}</span>`;
+}
+const LEAGUE = D.baseline.kind === 'league' ? D.baseline : null;
+function chipBg(s) { if (s == null) return 'transparent'; const t = Math.max(-1, Math.min(1, (s - 50) / 35)); return t >= 0 ? `rgba(76,175,109,${.15 + t * .55})` : `rgba(214,92,92,${.15 - t * .55})`; }
+function btns(el, opts, key, disabled = {}) {
+  el.innerHTML = '';
+  for (const [v, label, c] of opts) {
+    const b = document.createElement('button'); b.className = 'btn' + (st[key] === v ? ' on' : '');
+    b.innerHTML = (c ? `<span class="dot" style="background:${c}"></span>` : '') + label;
+    if (disabled[v]) { b.disabled = true; b.title = disabled[v]; }
+    b.onclick = () => { if (key === 'season' && st.season !== v) { if (edit.on) stopEdit(); setSeason(v); st.g = D.games.length - 1; st.pt = 'all'; } st[key] = v; st.sel = null; render(); };
+    el.appendChild(b);
+  }
+}
+
+// ---------- render ----------
+function render() {
+  if (tag.on && st.sel !== tag.list[tag.i]) stopTag('Tagging stopped');   // the view moved on
+  const P = cur(), S = stats(P, st.layer), SS = stats(seasonSet(), st.layer), G = st.g < 0 ? null : D.games[st.g];
+  $('who').textContent = `${D.pitcher.name} · ${SEASONS.length > 1 ? SEASONS[0] + '–' + SEASONS[SEASONS.length - 1] : st.season}` + (ROLE === 'coach' ? ' · coach view' : '') + (sbc && BE.status !== 'on' && BE.status !== 'signed out' ? ` · team store ${BE.status}` : '');
+  $('gTitle').textContent = G ? gLabel(G) : `${st.season} season`;
+  $('gMeta').textContent = (G ? `Game ${st.g + 1} of ${D.games.length} in ${st.season} · ` : `${D.games.length} games · `) + `${P.length} pitches in view`;
+  $('prev').disabled = st.g <= 0; $('next').disabled = st.g < 0 || st.g === D.games.length - 1; $('season').className = 'btn' + (st.g < 0 ? ' on' : '');
+  btns($('seasonBtns'), SEASONS.map(s => [s, s + (D.seasons && D.seasons[s] && D.seasons[s].approx ? ' · approx.' : '')]), 'season');
+  btns($('countBtns'), [['all', 'All'], ['pre', 'Before two strikes'], ['2K', 'Two strikes']], 'count');
+  btns($('ptBtns'), [['all', 'All'], ...FAMS.map(f => [f, D.fam_name[f], col(f)])], 'pt');
+  btns($('layerBtns'), LAYERS.map(l => [l, LAYER_NAME[l]]), 'layer', Object.fromEntries(LAYERS.filter(l => !hasLayer(l)).map(l => [l, l === 'glove' ? 'No glove reads yet: set them with Edit target under a clip' : `Needs at least ${HABIT_MIN} glove reads on a pitch type to learn the habit`])));
+  const gc = gloveCount();
+  $('layerNote').textContent = LAYER_NOTE[st.layer] + (st.layer === 'plan' && D.baseline.kind === 'season-mean' ? ` Score: 100 on target, 50 at a ${D.baseline.plan}" miss (his season average), lower from there.` : '')
+    + (st.layer === 'plan' && LEAGUE ? ` Score: 100 on target, 50 = the average right-handed starter (${LEAGUE.league_pitchers} of them, ${LEAGUE.anchor_season}, every pitch graded against this plan). The league runs about ${f1(LEAGUE.league_score.p10)} to ${f1(LEAGUE.league_score.p90)}.` : '')
+    + (st.layer !== 'plan' ? ` ${gc} of ${ALL.length} pitches have a glove read; the 50 line is a placeholder (${L[st.layer]}") until there are enough.` : '');
+  $('readSub').textContent = G ? 'this game vs his season' : 'whole season';
+
+  const T = $('tiles'); T.innerHTML = '';
+  const tile = (k, v, n, bg) => T.insertAdjacentHTML('beforeend', `<div class="tile" style="${bg ? 'background:' + bg : ''}"><div class="k">${k}</div><div class="v">${v}</div><div class="n">${n}</div></div>`);
+  if (S) {
+    tile('Command', f1(S.score), `± ${f1(S.band)} noise · ${G && SS ? delta(S.score, SS.score) : (LEAGUE && st.layer === 'plan' ? delta(S.score, LEAGUE.league_score.mean, 1, '', 'league') : 'season')}`, chipBg(S.score));
+    tile('Typical miss', f1(S.med) + '"', `median · ${S.n} of ${S.total} graded`);
+    tile('Aim offset', f1(Math.hypot(...S.bias)) + '"', dirWord(S.bias) + ' · fixable by aim');
+    tile('Spread', f1(S.spread) + '"', 'around his own center');
+    tile('Executed', pct(S.exec), `${pct(S.cent)} dead-middle ${G && SS ? delta(S.exec * 100, SS.exec * 100, 0, ' pts') : ''}`);
+  } else tile('No pitches', '–', 'nothing in this view');
+
+  const gb = $('gbar'); gb.innerHTML = ''; $('gleg').innerHTML = '';
+  const C = gradeCounts(P);
+  for (const g of GRADES) {
+    if (P.length && C[g]) gb.insertAdjacentHTML('beforeend', `<div title="${GRADE_LABEL[g]}: ${C[g]}" style="flex:${C[g]};background:${GC[g]}"></div>`);
+    $('gleg').insertAdjacentHTML('beforeend', `<span><i style="background:${GC[g]}"></i>${GRADE_LABEL[g]} ${C[g]} (${P.length ? Math.round(C[g] / P.length * 100) : 0}%)</span>`);
+  }
+  $('vMiss').className = 'btn' + (st.view === 'miss' ? ' on' : ''); $('vPlate').className = 'btn' + (st.view === 'plate' ? ' on' : '');
+  if (st.view === 'miss') drawMiss(P, S); else drawPlate(P);
+  $('chartLeg').innerHTML = (st.view === 'miss' ? '<span>◌ rings at 6" and 12"</span><span>⬭ spread (1 sd)</span><span>→ aim offset</span>' : '<span>○ target</span><span>● plate</span><span>─ miss</span><span>┌ zone</span>')
+    + FAMS.map(f => `<span><i style="background:${col(f)}"></i>${D.fam_name[f]}</span>`).join('');
+  drawTables(P, SS); drawSel(); drawTrend(); drawGameLog(SS); drawSummary();
+  $('foot').textContent = `No Brand Baseball Analytics · plan rules ${D.rules_version ? 'v' + D.rules_version.split(':')[0].replace(/^v/, '') : ''} · built ${D.built}`;
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+function el(svg, tag, a, txt) { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; svg.appendChild(e); return e; }
+function dot(svg, p, x, y) {
+  const sel = st.sel === p;
+  el(svg, 'circle', { cx: x, cy: y, r: sel ? 7 : 4.5, fill: col(p.fam), stroke: sel ? '#fff' : '#0b0b0d', 'stroke-width': sel ? 2 : 1.2, opacity: st.sel && !sel ? .35 : .95 });
+  const h = el(svg, 'circle', { cx: x, cy: y, r: 12, fill: 'transparent', style: 'cursor:pointer' });
+  h.onclick = () => select(sel ? null : p);
+  el(h, 'title', {}, `#${p.i} ${p.pt} ${p.b}-${p.s_} · ${f1(p.d[st.layer])}" · ${GRADE_LABEL[p.grade]}`);
+}
+const sideWord = x => (x > 0) === RHP ? 'glove side' : 'arm side';
+function drawMiss(P, S) {
+  const s = $('chart'); s.innerHTML = ''; s.setAttribute('viewBox', '0 0 360 360');
+  const R = 24, c = 180, k = 160 / R, X = v => c + v * k, Y = v => c - v * k;
+  for (const v of [-24, -12, 0, 12, 24]) { el(s, 'line', { x1: X(v), x2: X(v), y1: Y(-R), y2: Y(R), stroke: '#1b1b1f' }); el(s, 'line', { y1: Y(v), y2: Y(v), x1: X(-R), x2: X(R), stroke: '#1b1b1f' }); }
+  for (const r of [6, 12]) el(s, 'circle', { cx: c, cy: c, r: r * k, fill: 'none', stroke: '#5c5c63', 'stroke-dasharray': '4 4' });
+  el(s, 'text', { x: X(12) + 3, y: c - 3 }, '12"'); el(s, 'text', { x: X(6) + 3, y: c - 3 }, '6"');
+  el(s, 'text', { x: c, y: 14, 'text-anchor': 'middle' }, 'up'); el(s, 'text', { x: c, y: 354, 'text-anchor': 'middle' }, 'down');
+  el(s, 'text', { x: 6, y: c - 4 }, sideWord(-1)); el(s, 'text', { x: 354, y: c - 4, 'text-anchor': 'end' }, sideWord(1));
+  const cl = v => Math.max(-R, Math.min(R, v));
+  const inside = P.filter(p => p.m[st.layer] && Math.hypot(...p.m[st.layer]) <= 12).length;
+  el(s, 'text', { x: 6, y: 354 }, `${inside} of ${P.length} inside 12"`);
+  for (const p of P) { const m = p.m[st.layer]; if (m) dot(s, p, X(cl(m[0])), Y(cl(m[1]))); }
+  if (S && S.n > 4) {
+    const [sxx, szz, sxz] = S.cov, tr = sxx + szz, det = sxx * szz - sxz * sxz, d = Math.sqrt(Math.max(0, tr * tr / 4 - det)), l1 = tr / 2 + d, l2 = Math.max(.01, tr / 2 - d), ang = Math.atan2(l1 - sxx, sxz || 1e-9);
+    el(s, 'ellipse', { cx: X(S.bias[0]), cy: Y(S.bias[1]), rx: Math.sqrt(l1) * k, ry: Math.sqrt(l2) * k, fill: 'rgba(245,183,0,.07)', stroke: 'var(--gold)', 'stroke-width': 1.5, transform: `rotate(${-ang * 180 / Math.PI} ${X(S.bias[0])} ${Y(S.bias[1])})`, 'pointer-events': 'none' });
+    el(s, 'line', { x1: c, y1: c, x2: X(S.bias[0]), y2: Y(S.bias[1]), stroke: '#fff', 'stroke-width': 2.5, 'pointer-events': 'none' });
+    el(s, 'circle', { cx: X(S.bias[0]), cy: Y(S.bias[1]), r: 4, fill: '#fff', 'pointer-events': 'none' });
+  }
+}
+function drawPlate(P) {
+  const s = $('chart'); s.innerHTML = ''; s.setAttribute('viewBox', '0 0 360 400');
+  const k = 80, X = v => 180 + v * k, Y = v => 390 - v * k;
+  for (let v = -2; v <= 2; v++) el(s, 'line', { x1: X(v), x2: X(v), y1: 0, y2: 400, stroke: '#141418' });
+  for (let v = 0; v <= 4; v++) el(s, 'line', { y1: Y(v), y2: Y(v), x1: 0, x2: 360, stroke: '#141418' });
+  // the zone of the hitter in view: median zone of the pitches shown
+  const zb = median(P.filter(p => p.zone).map(p => p.zone[0])) || 1.6, zt = median(P.filter(p => p.zone).map(p => p.zone[1])) || 3.4;
+  el(s, 'rect', { x: X(-.708), y: Y(zt), width: 1.417 * k, height: (zt - zb) * k, fill: 'none', stroke: '#8e8e96', 'stroke-width': 1.5 });
+  el(s, 'path', { d: `M${X(-.708)} 396 L${X(.708)} 396 L${X(.708)} 391 L${X(0)} 386 L${X(-.708)} 391 Z`, fill: 'none', stroke: '#5c5c63' });
+  const cx = v => Math.max(-2.2, Math.min(2.2, v)), cz = v => Math.max(.1, Math.min(4.8, v));
+  for (const p of P) {
+    const t = st.layer === 'plan' ? p.tgt : p[st.layer], c = col(p.fam), dim = st.sel && st.sel !== p;
+    if (!t && st.layer !== 'plan') continue;
+    if (!t) continue;
+    el(s, 'line', { x1: X(t[0]), y1: Y(t[1]), x2: X(cx(p.x)), y2: Y(cz(p.z)), stroke: c, 'stroke-width': 1, opacity: dim ? .1 : .45 });
+    el(s, 'circle', { cx: X(t[0]), cy: Y(t[1]), r: 4, fill: 'none', stroke: c, 'stroke-width': 1.5, opacity: dim ? .15 : .9 });
+  }
+  for (const p of P) dot(s, p, X(cx(p.x)), Y(cz(p.z)));
+}
+function drawTables(P, SS) {
+  const base = st.g < 0 ? ALL : D.games[st.g].pitches;
+  let h = '<thead><tr><th class="l">Pitch</th><th>N</th><th>Score</th><th>Miss</th><th>Aim offset</th><th>Spread</th><th>Executed</th><th>Middle</th></tr></thead><tbody>';
+  for (const f of FAMS) {
+    const Q = base.filter(p => p.fam === f && cf(p)), S = stats(Q, st.layer); if (!S) continue;
+    const SF = stats(ALL.filter(p => p.fam === f && cf(p)), st.layer);
+    h += `<tr data-pt="${f}" class="${st.pt === f ? 'sel' : ''}"><td class="l"><span class="dot" style="background:${col(f)}"></span>${D.fam_name[f]}</td><td>${Q.length}</td><td><span class="chip" style="background:${chipBg(S.score)}">${f1(S.score)}</span> ${st.g >= 0 && SF ? delta(S.score, SF.score) : ''}</td><td>${f1(S.med)}"</td><td>${f1(Math.hypot(...S.bias))}" ${dirWord(S.bias)}</td><td>${f1(S.spread)}"</td><td>${pct(S.exec)}</td><td>${pct(S.cent)}</td></tr>`;
+  }
+  $('ptTable').innerHTML = h + '</tbody>';
+  $('ptTable').querySelectorAll('tbody tr').forEach(r => r.onclick = () => { st.pt = st.pt === r.dataset.pt ? 'all' : r.dataset.pt; st.sel = null; render(); });
+  drawSituations(P);
+}
+// ---------- by situation ----------
+// Six cuts of the pitches in view. Runners on base are not in the feed, so
+// "late and close" (sixth inning on, within a run) stands in for leverage.
+const SIT = [
+  { name: 'Times through the order', cats: ['1st time through', '2nd time through', '3rd time and later'], of: p => p.tto == null ? null : p.tto >= 3 ? 2 : p.tto - 1 },
+  { name: 'Outs', cats: ['0 outs', '1 out', '2 outs'], of: p => p.o == null ? null : p.o },
+  { name: 'Score', cats: ['Ahead', 'Tied', 'Behind'], of: p => p.sd == null ? null : p.sd > 0 ? 0 : p.sd === 0 ? 1 : 2 },
+  { name: 'Late and close', cats: ['6th inning on, within a run', 'Everything else'], of: p => p.sd == null ? null : (p.inn >= 6 && Math.abs(p.sd) <= 1) ? 0 : 1 },
+  { name: 'Inning', cats: ['Innings 1–3', 'Innings 4–6', '7th inning on'], of: p => p.inn <= 3 ? 0 : p.inn <= 6 ? 1 : 2 },
+  { name: 'Count', cats: ['Ahead in the count', 'Even count', 'Behind in the count'], of: p => p.b < p.s_ ? 0 : p.b === p.s_ ? 1 : 2 },
+];
+function drawSituations(P) {
+  const S0 = stats(P, st.layer), tb = $('sitTable');
+  $('sitSub').textContent = (st.g < 0 ? 'whole season' : 'this game') + ' · each row vs everything in view';
+  if (!S0) { tb.innerHTML = ''; $('sitNote').textContent = 'No graded pitches in view on this layer.'; return; }
+  let h = '<thead><tr><th class="l">Situation</th><th>N</th><th>Score</th><th>Executed</th><th>Middle</th><th>Miss</th></tr></thead><tbody>', rows = 0;
+  for (const dim of SIT) {
+    const groups = dim.cats.map(() => []);
+    for (const p of P) { const k = dim.of(p); if (k != null) groups[k].push(p); }
+    if (groups.filter(Q => Q.length).length < 2) continue;
+    h += `<tr class="grp"><td class="l" colspan="6">${dim.name}</td></tr>`;
+    dim.cats.forEach((cat, k) => {
+      const Q = groups[k], S = stats(Q, st.layer); if (!S) return; rows++;
+      const d = S.score - S0.score, real = Math.abs(d) > S.band && Q.length >= 10;
+      h += `<tr class="${Q.length < 10 ? 'thin' : ''}"><td class="l">${cat}</td><td>${Q.length}</td><td><span class="chip" style="background:${chipBg(S.score)}">${f1(S.score)}</span> ${delta(S.score, S0.score, 1, '', 'view')}${Q.length >= 10 ? ` <small class="${real ? 'real' : 'noise'}">${real ? 'beyond noise' : 'within noise'}</small>` : ''}</td><td>${pct(S.exec)}</td><td>${pct(S.cent)}</td><td>${f1(S.med)}"</td></tr>`;
+    });
+  }
+  tb.innerHTML = rows ? h + '</tbody>' : '';
+  $('sitNote').textContent = rows ? `Whole view: ${P.length} pitches, Command ${f1(S0.score)}, executed ${pct(S0.exec)}, dead-middle ${pct(S0.cent)}, typical miss ${f1(S0.med)}". Rows under 10 pitches are faded. Runners on base are not in the feed yet, so "late and close" stands in for pressure.` : 'Situation data is not built for these pitches yet.';
+  h = '<thead><tr><th>#</th><th>Inn</th><th>Count</th><th class="l">Batter</th><th class="l">Pitch</th><th>Score</th><th>Miss</th><th>Where</th><th>Grade</th></tr></thead><tbody>';
+  P.forEach((p, ix) => { h += `<tr data-ix="${ix}" class="${st.sel === p ? 'sel' : ''}"><td>${st.g < 0 ? 'G' + (p.gi + 1) + '·' : ''}${p.i}</td><td>${p.inn}</td><td>${p.b}-${p.s_}</td><td class="l">${p.bat || '–'} <span style="color:var(--dim)">${p.st}HH</span></td><td class="l"><span class="dot" style="background:${col(p.fam)}"></span>${p.pt}</td><td><span class="chip" style="background:${chipBg(p.sc[st.layer])}">${f1(p.sc[st.layer])}</span></td><td>${p.d[st.layer] == null ? '–' : f1(p.d[st.layer]) + '"'}</td><td>${p.m[st.layer] ? (p.grade === 'executed' ? 'on target' : p.dir || dirWord(p.m[st.layer])) : 'no glove read'}</td><td><span class="g" style="border-color:${GC[p.grade]}">${GRADE_LABEL[p.grade]}</span></td></tr>`; });
+  $('log').innerHTML = h + '</tbody>';
+  $('log').querySelectorAll('tbody tr').forEach(r => r.onclick = () => { const p = P[+r.dataset.ix]; select(st.sel === p ? null : p); });
+}
+
+// ---------- seasons side by side ----------
+function drawSummary() {
+  const card = $('summaryCard'); if (SEASONS.length < 2) { card.hidden = true; return; }
+  card.hidden = false;
+  const fams = Object.keys(D.fam_name).filter(f => ALL_P.some(p => p.fam === f));
+  const cell = (s, f) => stats(ALL_P.filter(p => p.season === s && cf(p) && (!f || p.fam === f)), st.layer);
+  let h = '<thead><tr><th class="l">Pitch</th>' + SEASONS.map(s => `<th colspan="4" style="text-align:center;border-left:1px solid var(--line)">${s}</th>`).join('') + '</tr><tr><th></th>' + SEASONS.map(() => '<th style="border-left:1px solid var(--line)">N</th><th>Command</th><th>Executed</th><th>Miss</th>').join('') + '</tr></thead><tbody>';
+  for (const f of [null, ...fams]) {
+    const cells = SEASONS.map(s => cell(s, f)); if (cells.every(c => !c)) continue;
+    h += `<tr class="${f === null ? 'sel' : ''}"><td class="l">${f === null ? 'All pitches' : `<span class="dot" style="background:${col(f)}"></span>${D.fam_name[f]}`}</td>` + cells.map(S => S ? `<td style="border-left:1px solid var(--line)">${S.total}</td><td><span class="chip" style="background:${chipBg(S.score)}">${f1(S.score)}</span></td><td>${pct(S.exec)}</td><td>${f1(S.med)}"</td>` : '<td style="border-left:1px solid var(--line)">–</td><td></td><td></td><td></td>').join('') + '</tr>';
+  }
+  $('summary').innerHTML = h + '</tbody>';
+  $('summarySub').textContent = `${LAYER_NAME[st.layer].toLowerCase()} · ${st.count === 'all' ? 'all counts' : st.count === '2K' ? 'two strikes' : 'before two strikes'} · one 50 line for both`;
+  const approx = SEASONS.filter(s => D.seasons && D.seasons[s] && D.seasons[s].approx);
+  $('summaryNote').textContent = approx.length ? `${approx.join(', ')}: locations come from the provider's normalized feed, graded against today’s plan; heights in inches use a typical zone, so distances carry a little slop. The provider does not split sweeper from slider that season.` : '';
+}
+EVERY.forEach(g => g.pitches.forEach(p => { p.season = g.season; }));
+
+// ---------- season: start by start, game log ----------
+const cf = p => st.count === 'all' || (st.count === '2K' ? p.twoK : !p.twoK);
+function gameStats(G, fam) { return stats(G.pitches.filter(p => cf(p) && (!fam || p.fam === fam)), st.layer); }
+function openGame(gi) { st.g = gi; st.sel = null; setTab('read'); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function drawTrend() {
+  const M = METRICS[st.metric];
+  const mb = $('metricBtns'); mb.innerHTML = '';
+  for (const [k, m] of Object.entries(METRICS)) { const b = document.createElement('button'); b.className = 'btn' + (st.metric === k ? ' on' : ''); b.textContent = m.label; b.onclick = () => { st.metric = k; drawTrend(); }; mb.appendChild(b); }
+  const sb = $('seriesBtns'); sb.innerHTML = '';
+  const allB = document.createElement('button'); allB.className = 'btn' + (!st.series.length ? ' on' : ''); allB.textContent = 'All pitches'; allB.onclick = () => { st.series = []; drawTrend(); }; sb.appendChild(allB);
+  for (const f of FAMS) { const b = document.createElement('button'); b.className = 'btn' + (st.series.includes(f) ? ' on' : ''); b.innerHTML = `<span class="dot" style="background:${col(f)}"></span>${D.fam_name[f]}`; b.onclick = () => { st.series = st.series.includes(f) ? st.series.filter(x => x !== f) : [...st.series, f]; drawTrend(); }; sb.appendChild(b); }
+
+  const series = [{ fam: null, color: '#efece4', name: 'All pitches' }, ...st.series.map(f => ({ fam: f, color: col(f), name: D.fam_name[f] }))];
+  const pts = series.map(s => ({ ...s, pts: D.games.map((G, i) => { const S = gameStats(G, s.fam); const v = S ? M.get(S) : null; return v == null || isNaN(v) ? null : { i, v, band: M.band(S) || 0, n: S.n }; }).filter(Boolean) }));
+  let lo = M.lo, hi = M.hi; for (const s of pts) for (const p of s.pts) { lo = Math.min(lo, p.v - p.band); hi = Math.max(hi, p.v + p.band); }
+  if (st.metric === 'score') { lo = Math.max(0, Math.floor((lo - 5) / 10) * 10); hi = Math.min(100, Math.ceil((hi + 5) / 10) * 10); } else { lo = 0; hi = Math.ceil(hi * 1.1 / 5) * 5 || M.hi; }
+  const s = $('trend'); s.innerHTML = '';
+  const L = 38, Rr = 708, T = 16, B = 212, n = D.games.length, X = i => L + (Rr - L) * (i + .5) / n, Y = v => B - (v - lo) / (hi - lo) * (B - T);
+  const tickFmt = v => st.metric === 'miss' ? f1(v) + '"' : Math.round(v) + (st.metric === 'score' ? '' : '%');
+  const ticks = 5; for (let k = 0; k <= ticks; k++) { const v = lo + (hi - lo) * k / ticks; el(s, 'line', { x1: L, x2: Rr, y1: Y(v), y2: Y(v), stroke: '#1b1b1f' }); el(s, 'text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end' }, tickFmt(v)); }
+  if (st.metric === 'score' && lo <= 50 && hi >= 50) el(s, 'line', { x1: L, x2: Rr, y1: Y(50), y2: Y(50), stroke: '#5c5c63', 'stroke-dasharray': '4 4' });
+  // month labels, skipping any that would sit on the previous one
+  let lastM = '', lastX = -99; D.games.forEach((G, i) => { const m = G.date.slice(5, 7); if (m !== lastM && X(i) - lastX > 34) { el(s, 'text', { x: X(i), y: 236, 'text-anchor': 'middle' }, ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m - 1]); lastX = X(i); } lastM = m; });
+  for (const sr of pts) {
+    if (sr.pts.length > 1) {
+      if (sr.fam === null && st.metric === 'score') el(s, 'path', { d: 'M' + sr.pts.map(o => `${X(o.i)} ${Y(o.v + o.band)}`).join(' L') + ' L' + sr.pts.slice().reverse().map(o => `${X(o.i)} ${Y(o.v - o.band)}`).join(' L') + ' Z', fill: 'rgba(245,183,0,.10)' });
+      el(s, 'path', { d: 'M' + sr.pts.map(o => `${X(o.i)} ${Y(o.v)}`).join(' L'), fill: 'none', stroke: sr.color, 'stroke-width': sr.fam === null ? 2 : 1.5, opacity: sr.fam === null ? 1 : .9 });
+    }
+    for (const o of sr.pts) {
+      const on = o.i === st.g;
+      el(s, 'circle', { cx: X(o.i), cy: Y(o.v), r: on && sr.fam === null ? 6 : 3.5, fill: on && sr.fam === null ? '#fff' : sr.color, stroke: '#131316', 'stroke-width': 1.5, 'pointer-events': 'none' });
+      if (on && sr.fam === null) el(s, 'text', { x: X(o.i), y: Y(o.v) - 10, 'text-anchor': 'middle', style: 'fill:#efece4;font-weight:700' }, M.fmt(o.v));
+    }
+  }
+  D.games.forEach((G, i) => { const h = el(s, 'rect', { x: X(i) - (Rr - L) / n / 2, y: T, width: (Rr - L) / n, height: B - T + 28, fill: 'transparent', style: 'cursor:pointer' }); h.onclick = () => openGame(i); const S0 = gameStats(G, null); el(h, 'title', {}, `${gLabel(G)}: ${S0 ? M.fmt(M.get(S0)) : '–'}${S0 && st.metric === 'score' ? ' ± ' + f1(S0.band) : ''} · ${S0 ? S0.n : 0} pitches`); });
+  $('trendLeg').innerHTML = series.map(sr => `<span><i style="background:${sr.color}"></i>${sr.name}</span>`).join('') + (st.metric === 'score' ? '<span>┄ 50 line</span>' : '');
+}
+function drawGameLog(SS) {
+  let h = '<thead><tr><th class="l">Game</th><th>Pitches</th><th>Command</th><th>Executed</th><th>Middle</th><th>Miss</th></tr></thead><tbody>';
+  D.games.forEach((G, i) => { const S = gameStats(G, st.pt === 'all' ? null : st.pt); if (!S) return;
+    h += `<tr data-gi="${i}" class="${st.g === i ? 'sel' : ''}"><td class="l">${gLabel(G)}</td><td>${S.total}</td><td><span class="chip" style="background:${chipBg(S.score)}">${f1(S.score)}</span></td><td>${pct(S.exec)}</td><td>${pct(S.cent)}</td><td>${f1(S.med)}"</td></tr>`; });
+  if (SS) h += `<tr style="font-weight:700"><td class="l">Season</td><td>${SS.total}</td><td><span class="chip" style="background:${chipBg(SS.score)}">${f1(SS.score)}</span></td><td>${pct(SS.exec)}</td><td>${pct(SS.cent)}</td><td>${f1(SS.med)}"</td></tr>`;
+  $('glog').innerHTML = h + '</tbody>';
+  $('glog').querySelectorAll('tbody tr[data-gi]').forEach(r => r.onclick = () => openGame(+r.dataset.gi));
+}
+
+// ---------- target drawn on the clip ----------
+// The overlay draws, on top of the clip, a small zone inset (target ring,
+// where the pitch went, the miss) and, when the camera is calibrated, the
+// target ring in the picture itself. A calibration maps plate coordinates
+// (x, z in feet) to picture fractions with four taps on a paused frame:
+// both plate edges, then the bottom and top of the hitter's zone. One per
+// park and camera angle; kept in the browser and seeded from data/<id>-cal.json.
+// The first two taps are the plate's first-base and third-base edges, not
+// left and right: a center-field camera sees first base on the left and a
+// camera behind the plate sees it on the right, and this way the map comes
+// out right for either.
+const CAL_STEPS = ['Tap the FIRST-BASE edge of home plate (the side a left-handed hitter stands on)', 'Tap the THIRD-BASE edge of home plate', 'Tap the BOTTOM of the hitter’s zone (hollow of the knees)', 'Tap the TOP of the hitter’s zone (letters)'];
+let CAL = {};
+try { const r = await fetch(`data/${PID}-cal.json`, { cache: 'no-store' }); if (r.ok) CAL = await r.json(); } catch (e) { /* none seeded */ }
+try { Object.assign(CAL, JSON.parse(localStorage.getItem('nb_cal_' + PID) || '{}')); } catch (e) { /* storage off */ }
+Object.assign(CAL, BE.cams);   // the team store wins over the browser copy
+const parkOf = G => G.home ? D.pitcher.team || 'HOME' : G.opp;
+const calKey = p => parkOf(D.games[p.gi]) + '|' + st.angle;
+let cal = { on: false, step: 0, taps: [] };
+// Where the picture sits inside the player box (letterboxing), as fractions.
+function contentRect() {
+  const v = $('player'), bw = v.clientWidth, bh = v.clientHeight;
+  if (!v.videoWidth || !bw) return { x: 0, y: 0, w: 1, h: 1 };
+  const s = Math.min(bw / v.videoWidth, bh / v.videoHeight), w = v.videoWidth * s / bw, h = v.videoHeight * s / bh;
+  return { x: (1 - w) / 2, y: (1 - h) / 2, w, h };
+}
+function project(c, x, z) { return [c.u0 + c.ax * x, c.v0 - c.az * z]; }
+function drawOverlay(p) {
+  const s = $('overlay'); s.innerHTML = '';
+  const v = $('player'); if (!p) { s.setAttribute('hidden', ''); $('ovNote').hidden = true; $('editTarget').hidden = true; return; }
+  s.removeAttribute('hidden');   // SVG elements do not reflect .hidden
+  $('editTarget').hidden = edit.on || !COACH;
+  if (v.hidden && !edit.on) { s.setAttribute('hidden', ''); $('ovNote').hidden = true; return; }   // no clip: the overlay only shows while editing
+  const W = 1000, H = 562, R = contentRect(), U = u => (R.x + u * R.w) * W, V = vv => (R.y + vv * R.h) * H;
+  const c = CAL[calKey(p)], t = p.tgt, zone = p.zone || [1.6, 3.4];
+  // Orientation: +1 = catcher's view (first base on the right), -1 = looking
+  // in from center field (first base on the left). Follow the calibrated
+  // camera; otherwise assume the broadcast angle looks in from center field.
+  const ori = c ? Math.sign(c.ax) || 1 : (st.angle === 'hh' ? 1 : -1);
+  const hitterX = (p.st === 'L' ? 1 : -1) * 1.25;   // a left-handed hitter stands on the first-base side
+  // inset: zone box with target ring, pitch location and miss, oriented like the picture
+  const ix = 14, iy = H - 84, k = 54, cx = ix + 1.55 * k, X = x => cx + ori * x * k, Y = z => iy - z * k * 0.9;   // sits above the player's control bar
+  const g = el(s, 'g', { opacity: .95 });
+  el(g, 'rect', { x: ix - 4, y: Y(4.6) - 4, width: 3.1 * k + 8, height: iy - Y(4.6) + 22, fill: 'rgba(11,11,13,.62)', rx: 6 });
+  el(g, 'rect', { x: Math.min(X(-.708), X(.708)), y: Y(zone[1]), width: 1.417 * k, height: (zone[1] - zone[0]) * k * 0.9, fill: 'none', stroke: '#fff', 'stroke-opacity': .8 });
+  el(g, 'path', { d: `M${X(-.708)} ${Y(0.25)} L${X(.708)} ${Y(0.25)} L${X(.708)} ${Y(0.1)} L${X(0)} ${Y(0)} L${X(-.708)} ${Y(0.1)} Z`, fill: 'none', stroke: '#8e8e96' });
+  el(g, 'line', { x1: X(hitterX), x2: X(hitterX), y1: Y(0.2), y2: Y(zone[1] + 0.6), stroke: '#8e8e96', 'stroke-dasharray': '3 3' });
+  el(g, 'text', { x: X(hitterX), y: Y(zone[1] + 0.9), 'text-anchor': 'middle', style: 'fill:#8e8e96;font-size:10px' }, p.st + 'HH');
+  el(g, 'text', { x: ix, y: iy + 16, style: 'fill:#8e8e96;font-size:10px' }, ori > 0 ? 'catcher’s view' : 'from center field');
+  // The filled dot is where the catcher takes the ball (the catch point, when
+  // the build has one); the small ring is where it crossed the front of the plate.
+  const cp = p.cp || [p.x, p.z], clampX = x => Math.max(-1.45, Math.min(1.45, x)), clampZ = z => Math.max(0, Math.min(4.4, z));
+  if (t) { el(g, 'line', { x1: X(t[0]), y1: Y(t[1]), x2: X(clampX(cp[0])), y2: Y(clampZ(cp[1])), stroke: col(p.fam), 'stroke-width': 1.5 }); el(g, 'circle', { cx: X(t[0]), cy: Y(t[1]), r: 6, fill: 'none', stroke: 'var(--gold)', 'stroke-width': 2 }); }
+  if (p.cp) el(g, 'circle', { cx: X(clampX(p.x)), cy: Y(clampZ(p.z)), r: 3.5, fill: 'none', stroke: col(p.fam), 'stroke-width': 1.5, opacity: .8 });
+  el(g, 'circle', { cx: X(clampX(cp[0])), cy: Y(clampZ(cp[1])), r: 5, fill: col(p.fam), stroke: '#0b0b0d' });
+  // in-frame ring, when this park and angle are calibrated
+  if (c && t && !cal.on) {
+    const [u, vv] = project(c, t[0], t[1]), [ua, va] = project(c, cp[0], cp[1]);
+    const r = Math.max(14, 0.5 * Math.abs(c.ax) * R.w * W);   // about a glove on the picture, never smaller than a fingertip
+    el(s, 'circle', { cx: U(u), cy: V(vv), r, fill: 'none', stroke: 'var(--gold)', 'stroke-width': 3, 'stroke-dasharray': '6 4' });
+    if (p.cp) { const [up, vp] = project(c, p.x, p.z); el(s, 'circle', { cx: U(up), cy: V(vp), r: Math.max(3, r * .25), fill: 'none', stroke: col(p.fam), 'stroke-width': 2, opacity: .8 }); }
+    el(s, 'circle', { cx: U(ua), cy: V(va), r: Math.max(3, r * .35), fill: col(p.fam), stroke: '#0b0b0d', 'stroke-width': 1.5 });
+    el(s, 'line', { x1: U(u), y1: V(vv), x2: U(ua), y2: V(va), stroke: col(p.fam), 'stroke-width': 2, opacity: .8 });
+  }
+  if (cal.on) for (const [i, tp] of cal.taps.entries()) { el(s, 'circle', { cx: U(tp[0]), cy: V(tp[1]), r: 6, fill: 'var(--gold)', stroke: '#0b0b0d' }); el(s, 'text', { x: U(tp[0]) + 9, y: V(tp[1]) + 4, style: 'fill:#fff;font-size:14px;font-weight:700' }, String(i + 1)); }
+  // the glove read: white open circle, in the inset and (calibrated) on the picture
+  const gl = edit.on ? edit.glove : p.glove;
+  if (gl) {
+    el(g, 'circle', { cx: X(gl[0]), cy: Y(gl[1]), r: 6, fill: 'none', stroke: '#fff', 'stroke-width': 2 });
+    if (c && !cal.on) { const [ug, vg] = project(c, gl[0], gl[1]); el(s, 'circle', { cx: U(ug), cy: V(vg), r: 12, fill: 'none', stroke: '#fff', 'stroke-width': 3 }); }
+  }
+  // edit mode: a large zone panel to tap in
+  if (edit.on && edit.mode === 'panel') {
+    const pw = 300, ph = 420, px0 = W / 2 - pw / 2, py0 = H / 2 - ph / 2 + 10, k2 = 78, cx2 = px0 + pw / 2, X2 = x => cx2 + ori * x * k2, Y2 = z => py0 + ph - 40 - z * k2 * 0.95;
+    edit.panel = { X2, Y2, k2, px0, py0, pw, ph, ori };
+    el(s, 'rect', { x: 0, y: 0, width: W, height: H, fill: 'rgba(11,11,13,.55)' });
+    el(s, 'rect', { x: px0, y: py0, width: pw, height: ph, fill: 'rgba(19,19,22,.96)', stroke: 'var(--gold)', rx: 10 });
+    for (let xx = -2; xx <= 2; xx++) el(s, 'line', { x1: X2(xx), x2: X2(xx), y1: py0 + 8, y2: py0 + ph - 8, stroke: '#232328' });
+    el(s, 'rect', { x: Math.min(X2(-.708), X2(.708)), y: Y2(zone[1]), width: 1.417 * k2, height: (zone[1] - zone[0]) * k2 * 0.95, fill: 'none', stroke: '#fff', 'stroke-width': 1.5 });
+    el(s, 'path', { d: `M${X2(-.708)} ${Y2(0.25)} L${X2(.708)} ${Y2(0.25)} L${X2(.708)} ${Y2(0.1)} L${X2(0)} ${Y2(0)} L${X2(-.708)} ${Y2(0.1)} Z`, fill: 'none', stroke: '#8e8e96' });
+    el(s, 'line', { x1: X2(hitterX), x2: X2(hitterX), y1: Y2(0.2), y2: Y2(zone[1] + 0.6), stroke: '#8e8e96', 'stroke-dasharray': '3 3' });
+    el(s, 'text', { x: X2(hitterX), y: Y2(zone[1] + 0.9), 'text-anchor': 'middle', style: 'fill:#8e8e96;font-size:11px' }, p.st + 'HH');
+    el(s, 'text', { x: px0 + 10, y: py0 + 20, style: 'fill:#efece4;font-size:13px;font-weight:700' }, 'Tap where the glove was set');
+    el(s, 'text', { x: px0 + 10, y: py0 + ph - 10, style: 'fill:#8e8e96;font-size:11px' }, ori > 0 ? 'catcher’s view, like the picture' : 'from center field, like the picture');
+    if (t) el(s, 'circle', { cx: X2(t[0]), cy: Y2(t[1]), r: 9, fill: 'none', stroke: 'var(--gold)', 'stroke-width': 2, 'stroke-dasharray': '4 3' });
+    el(s, 'circle', { cx: X2(Math.max(-1.6, Math.min(1.6, p.x))), cy: Y2(Math.max(0, Math.min(5, p.z))), r: 7, fill: col(p.fam), stroke: '#0b0b0d' });
+    if (edit.glove) el(s, 'circle', { cx: X2(edit.glove[0]), cy: Y2(edit.glove[1]), r: 11, fill: 'none', stroke: '#fff', 'stroke-width': 3 });
+  }
+  const note = $('ovNote'); note.hidden = false;
+  note.textContent = (c ? 'Dashed ring = the plan target drawn on the picture (approximate, from this park’s camera calibration). Inset: zone, target ring, where it went.' : 'Inset: zone, target ring, where it went. The ring is not drawn in the picture yet: this park’s camera is not calibrated.' + (COACH ? ' A coach can do it from Calibrate camera with four taps.' : ''))
+    + (p.glove ? ' White circle = the glove read.' : '')
+    + (st.sel && st.sel.cp ? ' The inset is oriented like the picture. Filled dot = where the catcher takes the ball; small ring = where it crossed the front of the plate.' : ' The inset is oriented like the picture. The dot is where the ball crossed the front of the plate; the catcher receives it a little later and lower.');
+  $('calBtn').hidden = !COACH; $('calBtn').textContent = cal.on ? 'Cancel' : c ? 'Recalibrate camera' : 'Calibrate camera';
+}
+
+// ---------- Edit target: set or correct the glove read for a pitch ----------
+let edit = { on: false, mode: 'panel', glove: null };
+function startEdit() {
+  const p = st.sel; if (!p) return;
+  const v = $('player'); if (!v.hidden) { v.pause(); if (v.currentTime < 1) v.currentTime = 1.5; }
+  edit = { on: true, mode: CAL[calKey(p)] ? 'pic' : 'panel', glove: p.glove ? [...p.glove] : null };
+  $('video').classList.add('edit'); $('editTarget').hidden = true; editMsg(); drawOverlay(p);
+}
+function stopEdit() { edit = { on: false, mode: 'panel', glove: null }; $('video').classList.remove('edit'); $('editBar').hidden = true; $('editTarget').hidden = false; drawOverlay(st.sel); }
+function editMsg() {
+  const p = st.sel, c = CAL[calKey(p)];
+  $('editBar').hidden = false;
+  $('editStore').textContent = sbc && ROLE === 'coach' ? '· saves go to the team store' : sbc ? '· not signed in as a coach: saves stay in this browser' : '· no backend configured: saves stay in this browser';
+  $('editOnPic').disabled = !c; $('editOnPic').title = c ? '' : 'Calibrate this park’s camera first';
+  $('editOnPanel').className = 'btn' + (edit.mode === 'panel' ? ' on' : ''); $('editOnPic').className = 'btn' + (edit.mode === 'pic' ? ' on' : '');
+  $('editMsg').textContent = (tag.on ? (edit.mode === 'pic' ? 'Paused on the set-up frame, zoomed on the plate. The ring is the plan target: tap the glove if it sits elsewhere (arrow keys nudge an inch), then Looks right.' : 'Tap in the zone where the catcher set up, catcher’s view, then Looks right.') : edit.mode === 'pic' ? 'Scrub to the frame where the catcher is set and tap the glove on the picture.' : 'Tap in the zone where the catcher set up, catcher’s view.')
+    + (edit.glove ? ` Glove at ${edit.glove[0].toFixed(2)} ft, ${edit.glove[1].toFixed(2)} ft.` : ' No glove read yet.');
+}
+function saveGlove() {
+  const p = st.sel; if (!p) return;
+  const xz = edit.glove ? [+edit.glove[0].toFixed(3), +edit.glove[1].toFixed(3)] : null;
+  if (xz) GLOVE[p.pid] = xz; else delete GLOVE[p.pid];
+  try { localStorage.setItem('nb_glove_' + PID, JSON.stringify(GLOVE)); } catch (e) { /* storage off */ }
+  HABITS = scoreAll(); stopEdit(); render();
+  persistGlove(p.pid, xz).then(w => { $('clipInfo').textContent = `Glove read ${storeWord(w)}`; }).catch(e => { $('clipInfo').textContent = 'Glove read saved in this browser; team store said: ' + e.message; });
+  if (tag.on) { tag.saved++; tagNext(); }
+}
+
+// ---------- Tag gloves: every pitch in view, one tap each ----------
+// Opens each pitch without a glove read paused on its set-up frame (from
+// data/<id>-setup.json, found by motion analysis of the clip), zoomed on the
+// plate, with the plan target offered as the glove; the coach taps the glove
+// or accepts, and the next pitch opens.
+let SETUP = {};
+try { const r = await fetch(`data/${PID}-setup.json`, { cache: 'no-store' }); if (r.ok) SETUP = await r.json(); } catch (e) { /* none yet */ }
+$('tagBtn').hidden = !COACH;
+function startTag() {
+  const list = cur().filter(p => !p.glove && clipFor(p));
+  if (!list.length) { $('clipInfo').textContent = 'Every pitch in view with a clip has a glove read'; return; }
+  tag = { on: true, list, i: 0, saved: 0 }; $('tagBtn').textContent = 'Stop tagging'; tagOpen();
+}
+function stopTag(msg) {
+  const was = tag.on; tag = { on: false, list: [], i: 0, saved: 0 };
+  $('video').classList.remove('zoom'); $('tagBar').hidden = true; $('tagBtn').textContent = 'Tag gloves';
+  if (edit.on) stopEdit();
+  if (was && msg) $('clipInfo').textContent = msg;
+}
+function tagOpen() {
+  const p = tag.list[tag.i];
+  select(p); startEdit();
+  if (!edit.glove && p.tgt) edit.glove = [...p.tgt];
+  edit.mode = CAL[calKey(p)] ? 'pic' : 'panel';
+  $('tagBar').hidden = false; $('tagProg').textContent = `Tagging ${tag.i + 1} of ${tag.list.length} · pitch ${p.i}, ${D.fam_name[p.fam] || p.pt}`;
+  editMsg(); drawOverlay(p); zoomTo(p); seekSetup(p);
+}
+function tagNext() { tag.i++; if (tag.i >= tag.list.length) stopTag(`Tagging done: ${tag.saved} glove reads saved`); else tagOpen(); }
+function seekSetup(p) {
+  const v = $('player'), t = SETUP[p.pid] != null ? SETUP[p.pid] : 1.5;
+  const go = () => { v.pause(); v.currentTime = Math.min(t, Math.max(0, (v.duration || 7) - 0.2)); };
+  if (v.readyState >= 1) go(); else v.addEventListener('loadedmetadata', go, { once: true });
+}
+function zoomTo(p) {
+  const c = CAL[calKey(p)], vd = $('video'); if (!c || !$('player').videoWidth) { vd.classList.remove('zoom'); return; }
+  const R = contentRect(), [u, vv] = project(c, 0, 2.2);
+  vd.style.setProperty('--zx', ((R.x + u * R.w) * 100).toFixed(1) + '%'); vd.style.setProperty('--zy', ((R.y + vv * R.h) * 100).toFixed(1) + '%');
+  vd.classList.add('zoom');
+}
+$('tagBtn').onclick = () => tag.on ? stopTag('Tagging stopped') : startTag();
+$('tagOk').onclick = saveGlove;
+$('tagSkip').onclick = tagNext;
+$('tagStop').onclick = () => stopTag('Tagging stopped');
+document.addEventListener('keydown', ev => {
+  if (!tag.on || ev.target.tagName === 'INPUT') return;
+  const g = edit.glove, ori = CAL[calKey(st.sel)] ? Math.sign(CAL[calKey(st.sel)].ax) || 1 : -1, step = 1 / 12;
+  if (ev.key === 'Enter') saveGlove();
+  else if (ev.key === 's' || ev.key === 'S') tagNext();
+  else if (ev.key === 'Escape') stopTag('Tagging stopped');
+  else if (g && ev.key === 'ArrowLeft') { g[0] -= ori * step; editMsg(); drawOverlay(st.sel); }
+  else if (g && ev.key === 'ArrowRight') { g[0] += ori * step; editMsg(); drawOverlay(st.sel); }
+  else if (g && ev.key === 'ArrowUp') { g[1] += step; editMsg(); drawOverlay(st.sel); }
+  else if (g && ev.key === 'ArrowDown') { g[1] -= step; editMsg(); drawOverlay(st.sel); }
+  else return;
+  ev.preventDefault();
+});
+$('overlay').addEventListener('click', ev => {
+  if (!edit.on || !st.sel) return;
+  const b = $('overlay').getBoundingClientRect(), W = 1000, H = 562;
+  const sx = (ev.clientX - b.left) / b.width * W, sy = (ev.clientY - b.top) / b.height * H;
+  if (edit.mode === 'panel') {
+    const P = edit.panel; if (!P) return;
+    if (sx < P.px0 || sx > P.px0 + P.pw || sy < P.py0 || sy > P.py0 + P.ph) return;
+    edit.glove = [P.ori * (sx - (P.px0 + P.pw / 2)) / P.k2, (P.py0 + P.ph - 40 - sy) / (P.k2 * 0.95)];
+  } else {
+    const c = CAL[calKey(st.sel)], R = contentRect(); if (!c) return;
+    const u = (sx / W - R.x) / R.w, vv = (sy / H - R.y) / R.h;
+    edit.glove = [(u - c.u0) / c.ax, (c.v0 - vv) / c.az];
+  }
+  editMsg(); drawOverlay(st.sel);
+});
+$('editTarget').onclick = startEdit;
+$('editOnPanel').onclick = () => { edit.mode = 'panel'; editMsg(); drawOverlay(st.sel); };
+$('editOnPic').onclick = () => { if (!CAL[calKey(st.sel)]) return; edit.mode = 'pic'; editMsg(); drawOverlay(st.sel); };
+$('editClear').onclick = () => { edit.glove = null; editMsg(); drawOverlay(st.sel); };
+$('editCancel').onclick = stopEdit;
+$('editSave').onclick = saveGlove;
+$('editCopy').onclick = async () => { try { await navigator.clipboard.writeText(JSON.stringify(GLOVE)); $('editCopied').textContent = `copied ${Object.keys(GLOVE).length} reads`; } catch (e) { $('editCopied').textContent = 'could not copy'; } };
+function startCal() {
+  const v = $('player'); v.pause(); if (v.currentTime < 1) v.currentTime = 1.5;
+  cal = { on: true, step: 0, taps: [] }; $('video').classList.add('cal'); calMsg(); drawOverlay(st.sel);
+}
+function stopCal() { cal = { on: false, step: 0, taps: [] }; $('video').classList.remove('cal'); $('calMsg').hidden = true; drawOverlay(st.sel); }
+function calMsg() { const m = $('calMsg'); m.hidden = false; m.textContent = `Step ${cal.step + 1} of 4: ${CAL_STEPS[cal.step]}. The clip is paused; scrub to a frame where the hitter is set.`; }
+$('overlay').addEventListener('click', ev => {
+  if (!cal.on || !st.sel) return;
+  const b = $('overlay').getBoundingClientRect(), R = contentRect();
+  const u = ((ev.clientX - b.left) / b.width - R.x) / R.w, vv = ((ev.clientY - b.top) / b.height - R.y) / R.h;
+  cal.taps.push([u, vv]); cal.step++;
+  if (cal.step < 4) { calMsg(); drawOverlay(st.sel); return; }
+  const [B1, B3, Bo, To] = cal.taps, zone = st.sel.zone || [1.6, 3.4];
+  // +x in the data is the first-base side (catcher's right), so ax carries the camera's orientation in its sign.
+  const ax = (B1[0] - B3[0]) / 1.417, u0 = (B1[0] + B3[0]) / 2, az = (Bo[1] - To[1]) / (zone[1] - zone[0]), v0 = Bo[1] + az * zone[0];
+  const key = calKey(st.sel);
+  if (Math.abs(ax) < 1e-4 || az <= 0) { $('calMsg').textContent = 'Those taps do not make sense (the two plate edges sit on one spot, or the knees are above the letters). Start again.'; cal.step = 0; cal.taps = []; setTimeout(calMsg, 2500); return; }
+  CAL[key] = { u0, ax, v0, az, pitch: st.sel.pid, taps: cal.taps, zone };
+  try { localStorage.setItem('nb_cal_' + PID, JSON.stringify(CAL)); } catch (e) { /* storage off */ }
+  stopCal();
+  persistCamera(key, CAL[key]).then(w => { $('clipInfo').textContent = `Camera ${key.split('|')[0]} ${storeWord(w)}`; }).catch(e => { $('clipInfo').textContent = 'Camera saved in this browser; team store said: ' + e.message; });
+});
+$('calBtn').onclick = () => cal.on ? stopCal() : startCal();
+$('player').addEventListener('loadedmetadata', () => { drawOverlay(st.sel); if (tag.on) zoomTo(st.sel); });
+window.addEventListener('resize', () => drawOverlay(st.sel));
+
+// ---------- selected pitch and video ----------
+function select(p) {
+  if (edit.on) stopEdit();
+  st.sel = p; if (p && st.tab !== 'pitches') setTab('pitches'); render();
+  if (p) $('selCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+// Clips: data/<id>-clips.json maps pitch id -> { h: broadcast, hh: high home } (or a plain URL).
+const ANGLES = { h: 'Broadcast', hh: 'High home' };
+st.angle = 'h';
+function clipFor(p) {
+  const c = (p.pid && CLIPS[p.pid]) || p.clip || null;
+  if (!c) return null;
+  if (typeof c === 'string') return c;
+  return c[st.angle] || c.h || c.hh || null;
+}
+function drawAngles(p) {
+  const c = p && p.pid && CLIPS[p.pid];
+  const el = $('angles'); el.innerHTML = '';
+  if (!c || typeof c === 'string') return;
+  for (const [k, label] of Object.entries(ANGLES)) {
+    if (!c[k]) continue;
+    const b = document.createElement('button'); b.textContent = label; b.style.textDecoration = st.angle === k ? 'none' : 'underline'; b.style.marginRight = '10px'; b.style.fontWeight = st.angle === k ? '700' : '400';
+    b.onclick = () => { st.angle = k; drawSel(); };
+    el.appendChild(b);
+  }
+}
+function drawSel() {
+  const p = st.sel, v = $('player'), slot = $('slot'), kv = $('kv');
+  if (!p) {
+    $('selHint').textContent = 'tap any dot or row'; $('selCap').textContent = 'No pitch selected';
+    v.hidden = true; v.removeAttribute('src'); slot.hidden = false; slot.textContent = 'Tap a pitch on the chart or in the log to load its clip';
+    $('clipInfo').textContent = ''; $('angles').innerHTML = ''; $('closeClip').hidden = true; $('calBtn').hidden = true; kv.innerHTML = ''; if (cal.on) stopCal(); if (edit.on) stopEdit(); drawOverlay(null); return;
+  }
+  drawAngles(p);
+  const G = D.games[p.gi];
+  $('selHint').textContent = gLabel(G);
+  $('selCap').textContent = `Pitch ${p.i}, ${D.fam_name[p.fam] || p.pt} to ${p.bat || 'the hitter'}, inning ${p.inn}, count ${p.b}-${p.s_}`;
+  const url = clipFor(p);
+  if (url) {
+    if (v.getAttribute('src') !== url) { v.src = url; v.load(); }
+    v.hidden = false; slot.hidden = true; $('closeClip').hidden = false;
+    if (!tag.on) v.play().catch(() => {});
+    $('clipInfo').textContent = 'Clip of this pitch';
+  } else {
+    v.hidden = true; v.removeAttribute('src'); slot.hidden = false; $('closeClip').hidden = true; $('calBtn').hidden = true;
+    slot.textContent = 'No clip loaded for this pitch yet';
+    $('clipInfo').textContent = '';
+  }
+  if (cal.on) stopCal(); else if (!edit.on) drawOverlay(p);
+  const row = (a, b) => `<span>${a}</span><span>${b}</span>`;
+  kv.innerHTML = row('Grade vs plan', `${GRADE_LABEL[p.grade]}${p.grade !== 'executed' && p.dir ? ' · missed ' + p.dir : ''}`)
+    + LAYERS.map(l => row('vs ' + LAYER_NAME[l].toLowerCase(), p.m[l] ? `${f1(p.d[l])}" ${l === 'plan' && p.grade === 'centered' ? 'dead middle' : dirWord(p.m[l])} · score ${f1(p.sc[l])}` : 'no glove read')).join('')
+    + row('Result', (p.desc || '').replace(/_/g, ' '));
+}
+$('closeClip').onclick = () => { const v = $('player'); v.pause(); v.hidden = true; v.removeAttribute('src'); $('slot').hidden = false; $('closeClip').hidden = true; $('calBtn').hidden = true; if (cal.on) stopCal(); drawOverlay(null); };
+// ---------- plain-language explainers, one per card ----------
+const HELP = {
+  start: '<b>Pick a start</b> with Prev and Next, or Whole season for the whole year. <b>Count</b> splits the pitches into before two strikes and with two strikes, because the plan is different in each. <b>Pitch</b> shows one pitch type. <b>Graded against</b> is what counts as the target: the <b>glove</b> is where the catcher set up; <b>glove + habit</b> is the glove moved by where you really aim that pitch, learned from your own pitches; <b>the plan</b> is your own target box for that pitch in that count.',
+  read: '<b>Command</b> runs 0 to 100. 100 means the pitch hit its spot, 50 is the average big-league right-handed starter graded on your own plan, and dead-middle scores 0. Most of the league sits between the mid 40s and the mid 50s, so a few points is a real gap. <b>vs league</b> is you against that average. The <b>± noise</b> is how much one start can swing on luck alone: two starts inside each other’s band are the same start. <b>Typical miss</b> is the middle miss, in inches. <b>Aim offset</b> is your average miss direction, the part you can fix by aiming somewhere else. <b>Spread</b> is how tight the pitches sit around your own center, the part that is about repeating the delivery. <b>Executed</b> is the share that landed in the plan box, and <b>dead-middle</b> the share that landed where hitters live.',
+  seasons: 'The same scoring for every season, so the numbers compare straight across. A season marked <b>approx.</b> has slightly less precise heights, which affects inches a little and grades not at all.',
+  location: '<b>Miss pattern</b> plots every pitch by how far it missed the target, in inches. Up is up, and the sides are labeled arm side and glove side. Rings mark 6 and 12 inches. The ellipse is your spread and the arrow is your aim offset. <b>Target to plate</b> shows the target as an open circle, where the pitch crossed the plate as a dot, and the miss as the line between them. Tap any dot to watch the pitch.',
+  clip: 'The clip, with the plan target drawn as a dashed ring on the picture and a small inset showing the zone, the target and where the pitch went. The filled dot is where the catcher takes the ball, about three feet past the front of the plate, worked out from the pitch’s release point and bend. The small ring is where it crossed the front of the plate, which is what the grades use. The lines underneath give the grade and the miss against each target.',
+  bypitch: 'Each pitch type in this view against your season: how many, the Command score and the change versus the season, the typical miss, the aim offset and spread, and the executed and dead-middle shares. Tap a row to show only that pitch.',
+  log: 'Every pitch in order. <b>Where</b> is which way it missed. <b>Grade</b> is one of executed (in the box), within one ball (under 3 inches), centered (dead middle), strike off target, or ball off target. Tap a row to watch it.',
+  trend: 'Your Command score start by start. The shaded band is noise: a point that leaves the previous band is a real change, a point inside it is not. Add pitch types to see which one moved. Tap a start to open it.',
+  games: 'One line per start with pitches, Command, executed and dead-middle shares and the typical miss. Tap a start to open it.',
+  situations: 'The same pitches cut six ways: how many times through the order, outs, the score, late-and-close spots, the inning, and whether you were ahead or behind in the count. Each row’s change is against everything in view. <b>Beyond noise</b> means the gap is bigger than luck alone would make with that many pitches, so it is a real pattern; <b>within noise</b> means it could be nothing. Rows with fewer than 10 pitches are faded.',
+};
+for (const card of document.querySelectorAll('[data-help]')) {
+  const key = card.dataset.help, h2 = card.querySelector('h2'), host = h2 ? h2.firstChild : null;
+  const b = document.createElement('button'); b.className = 'q'; b.textContent = '?'; b.title = 'What am I looking at?';
+  const box = document.createElement('div'); box.className = 'help'; box.innerHTML = HELP[key]; box.hidden = true;
+  b.onclick = () => { box.hidden = !box.hidden; b.classList.toggle('on', !box.hidden); };
+  if (h2) { h2.insertBefore(b, h2.children[0] && h2.children[0].tagName === 'SMALL' ? h2.children[0] : null); h2.after(box); }
+  else { const row = card.querySelector('.row'); b.style.marginLeft = '0'; row.querySelector('.nav').prepend(b); row.after(box); }
+}
+$('prev').onclick = () => { if (st.g > 0) { st.g--; st.sel = null; render(); } };
+$('next').onclick = () => { if (st.g >= 0 && st.g < D.games.length - 1) { st.g++; st.sel = null; render(); } };
+$('season').onclick = () => { st.g = st.g < 0 ? D.games.length - 1 : -1; st.sel = null; render(); };
+$('vMiss').onclick = () => { st.view = 'miss'; render(); };
+$('vPlate').onclick = () => { st.view = 'plate'; render(); };
+setTab(st.tab);
+render();
+</script>
+</body>
+</html>
